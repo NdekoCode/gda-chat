@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 export default class UserCTRL {
   /**
    * @description Pour l'enregistrement des nouveaux utilisateurs
