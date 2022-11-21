@@ -10,7 +10,7 @@ import { Schema, model } from "mongoose";
  *
  */
 const userSchema = new Schema({
-  firsname: {
+  firstname: {
     type: String,
     required: true,
   },
@@ -21,7 +21,6 @@ const userSchema = new Schema({
   username: {
     type: String,
     required: false,
-    unique: true,
   },
   email: {
     type: String,
@@ -34,5 +33,5 @@ const userSchema = new Schema({
   },
 });
 /** @type {Model} */
-const userMDL = new model("User", userSchema);
-export default userMDL;
+const UserMDL = new model("User", userSchema);
+export default UserMDL;

@@ -1,5 +1,6 @@
 {
 	"dependencies": {
+		"morgan": "^1.10.0",
 		"query-string": "^7.1.1",
 		"react-emoji": "^0.5.0",
 		"socket.io-client": "^4.5.3"

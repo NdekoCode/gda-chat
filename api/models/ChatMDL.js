@@ -5,13 +5,19 @@ const ChatSchema = new Schema({
     required: true,
   },
   userId: {
-    type: String,
+    type: Schema.Types.ObjectId,
     required: true,
-    sender: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      ref: "User",
-    },
+    ref: "User",
+  },
+  receiver: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
+  sender: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
   },
 });
-const chatMDL = new model("Chat", ChatSchema);
+export const chatMDL = new model("Chat", ChatSchema);
