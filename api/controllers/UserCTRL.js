@@ -1,10 +1,12 @@
 import { compare, hash } from "bcrypt";
+import jwt from "jsonwebtoken";
 import UserMDL from "../models/UserMDL.js";
 import Alert from "../utils/Alert.js";
 import {
   isEmpty,
   isEmptyObject,
   isValidUserFields,
+  isVarEmpty,
   ValidateEmail,
   validForm,
   validPassword,
@@ -15,8 +17,14 @@ import {
  * @class UserCTRL
  */
 export default class UserCTRL {
-  defaultHash = 12;
-  userFields = ["firstname", "lastname", "email", "password", "username"];
+  static defaultHash = 12;
+  static userFields = [
+    "firstname",
+    "lastname",
+    "email",
+    "password",
+    "username",
+  ];
   /**
    * @description Pour l'enregistrement des nouveaux utilisateurs
    * @author NdekoCode
@@ -33,11 +41,14 @@ export default class UserCTRL {
       ...validPassword(req.body.password),
     };
     // Si l'objet des erreurs est vide et que on a des champs valide alors il n'y a pas d'erreur dans notre requete
-    if (isEmptyObject(errors) && isValidUserFields(req.body, this.userFields)) {
+    if (
+      isEmptyObject(errors) &&
+      isValidUserFields(req.body, UserCTRL.userFields)
+    ) {
       try {
         // Cette methode prend deux argument, la chaine que l'on veut crypter et combien de fois on souhaite le crypter
         // On crypt notre mot de passe, une fois qu'il est crypter on enregistrer l'utilisateur
-        const password = await hash(req.body.password, this.defaultHash);
+        const password = await hash(req.body.password, UserCTRL.defaultHash);
         const user = new UserMDL({
           ...req.body,
           email: req.body.email,
@@ -56,16 +67,17 @@ export default class UserCTRL {
           return user
             .save()
             .then(() => alert.success("Utilisateur créer avec succées"))
-            .catch(() =>
+            .catch((error) =>
               alert.danger(
-                "Erreur lors de l'enregistrement de l'utilisateur",
-                400
+                "Erreur lors de l'enregistrement de l'utilisateur" +
+                  error.message,
+                500
               )
             );
         });
       } catch (error) {
         return alert.danger(
-          "Erreur lors de l'enregistrement de l'utilisateur",
+          "Erreur lors de l'enregistrement de l'utilisateur " + error.message,
           500
         );
       }
@@ -88,11 +100,12 @@ export default class UserCTRL {
         ...validPassword(req.body.password),
       };
       if (isEmptyObject(errors)) {
+        console.log(req.body);
         try {
           const user = await UserMDL.findOne({ email: req.body.email });
 
           // On verifie si l'utilisateur a été trouver
-          if (isEmpty(user)) {
+          if (isVarEmpty(user)) {
             // Si l'utilisateur n'a pas été trouver on envois une reponse 401
             return alert.danger("Email ou mot de passe incorrect", 401);
           }
@@ -113,8 +126,9 @@ export default class UserCTRL {
             }),
           });
         } catch (error) {
-          alert.danger(
-            "Erreur survenus lors de la connexion de l'utilisateur",
+          return alert.danger(
+            "Erreur survenus lors de la connexion de l'utilisateur " +
+              error.stack,
             500
           );
         }

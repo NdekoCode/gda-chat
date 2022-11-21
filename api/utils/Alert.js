@@ -43,7 +43,7 @@ export default class Alert {
    * @memberof Alert
    */
   success(message = "", statusCode = 201, type = "success") {
-    return makeAlert(message, statusCode, type, null);
+    return this.makeAlert(message, statusCode, type, null);
   }
   /**
    * @description  Fait une alerte de type Danger
@@ -55,7 +55,7 @@ export default class Alert {
    * @memberof Alert
    */
   danger(message = "", statusCode = 400, type = "danger") {
-    return makeAlert(message, statusCode, type, null);
+    return this.makeAlert(message, statusCode, type, null);
   }
   /**
    * @description  Fait une alerte d'avertissement
@@ -67,7 +67,7 @@ export default class Alert {
    * @memberof Alert
    */
   warning(message = "", statusCode = 199, type = "warning") {
-    return makeAlert(message, statusCode, type, null);
+    return this.makeAlert(message, statusCode, type, null);
   }
   /**
    * @description Fait une alerte Informative
@@ -79,6 +79,6 @@ export default class Alert {
    * @memberof Alert
    */
   infos(message = "", statusCode = 100, type = "info") {
-    return makeAlert(message, statusCode, type, null);
+    return this.makeAlert(message, statusCode, type, null);
   }
 }

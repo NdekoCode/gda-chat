@@ -10,9 +10,11 @@ const httpConfig = (app) => {
       skip: (req, res) => res.status < 400,
     })
   );
-  app.use("common", {
-    stream: createWriteStream(join(__dirname, "access.log"), { flags: "a" }),
-  });
+  app.use(
+    morgan("common", {
+      stream: createWriteStream(join(__dirname, "access.log"), { flags: "a" }),
+    })
+  );
   app.set("port", PORT);
   const server = createServer(app);
   const handleError = (err) => {
@@ -41,6 +43,8 @@ const httpConfig = (app) => {
       typeof address === "string" ? "pipe " + address : "port: " + PORT;
     console.log("Listening on " + bind);
   });
-  server.listen(PORT);
+  server.listen(PORT, () => {
+    console.log("Server is listening at " + PORT);
+  });
 };
 export default httpConfig;
