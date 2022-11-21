@@ -4,15 +4,19 @@ import Alert from "../utils/Alert.js";
 import {
   isEmpty,
   isEmptyObject,
+  isValidUserFields,
   ValidateEmail,
+  validForm,
   validPassword,
 } from "../utils/validators.js";
 /**
  * @description Va contenir les differentes fonctions qui vont interagir avec l'application concernant le traitement des Utilisateur et la route "/api/v1/auth"
  * @author NdekoCode
- * @class UserController
+ * @class UserCTRL
  */
 export default class UserCTRL {
+  defaultHash = 12;
+  userFields = ["firstname", "lastname", "email", "password", "username"];
   /**
    * @description Pour l'enregistrement des nouveaux utilisateurs
    * @author NdekoCode
@@ -24,44 +28,48 @@ export default class UserCTRL {
   async signup(req, res, next) {
     const alert = new Alert(req, res);
     const errors = {
+      ...validForm(req.body),
       ...ValidateEmail(req.body.email),
       ...validPassword(req.body.password),
     };
-    // Si l'objet des erreurs est vide alors il n'y a pas d'erreur dans notre requete
-    if (isEmptyObject(errors)) {
-      // Cette methode prend deux argument, la chaine que l'on veut crypter et combien de fois on souhaite le crypter
-      // On crypt notre mot de passe, une fois qu'il est crypter on enregistrer l'utilisateur
-      return hash(req.body.password, 14)
-        .then((password) => {
-          const user = new userModel({
-            email: req.body.email,
-            password,
-          });
-          // On verifie si l'utilisateur existe pour eviter la duplication des données
-          return UserMDL.exists({ email: req.body.email }, (err, result) => {
-            if (err) return err;
-            if (result)
-              return alert.danger(
-                "Cet email est déja pris, veuillez vous connecter avec un autre e-mail",
-                309
-              );
-            // Si l'utilisateur n'existe pas alors on l'ajoute dans notre base de donnée
-            return user
-              .save()
-              .then(() => alert.success("Utilisateur créer avec succées"))
-              .catch(() =>
-                alert.danger(
-                  "Erreur lors de l'enregistrement de l'utilisateur",
-                  400
-                )
-              );
-          });
-        })
-        .catch(() =>
-          alert.danger("Erreur lors de l'enregistrement de l'utilisateur", 500)
+    // Si l'objet des erreurs est vide et que on a des champs valide alors il n'y a pas d'erreur dans notre requete
+    if (isEmptyObject(errors) && isValidUserFields(req.body, this.userFields)) {
+      try {
+        // Cette methode prend deux argument, la chaine que l'on veut crypter et combien de fois on souhaite le crypter
+        // On crypt notre mot de passe, une fois qu'il est crypter on enregistrer l'utilisateur
+        const password = await hash(req.body.password, this.defaultHash);
+        const user = new UserMDL({
+          email: req.body.email,
+          password,
+        });
+
+        // On verifie si l'utilisateur existe pour eviter la duplication des données
+        return UserMDL.exists({ email: req.body.email }, (err, result) => {
+          if (err) return err;
+          if (result)
+            return alert.danger(
+              "Cet email est déja pris, veuillez vous connecter avec un autre e-mail",
+              309
+            );
+          // Si l'utilisateur n'existe pas alors on l'ajoute dans notre base de donnée
+          return user
+            .save()
+            .then(() => alert.success("Utilisateur créer avec succées"))
+            .catch(() =>
+              alert.danger(
+                "Erreur lors de l'enregistrement de l'utilisateur",
+                400
+              )
+            );
+        });
+      } catch (error) {
+        return alert.danger(
+          "Erreur lors de l'enregistrement de l'utilisateur",
+          500
         );
+      }
     }
-    return alert.danger(errors, 400);
+    return alert.danger(errors, 401);
   }
   /**
    * @description Pour connecter des utilisateurs existants
@@ -114,6 +122,6 @@ export default class UserCTRL {
 
       return alert.danger("Email ou mot de passe invalide");
     }
-    return alert.danger("Entrer des informations valides");
+    return alert.danger("Entrer des informations valides", 401);
   }
 }

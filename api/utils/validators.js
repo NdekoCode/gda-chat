@@ -76,7 +76,7 @@ export function isArrayEmpty(value) {
  * @param {Array} [error=[]] Le tableau des erreurs
  * @return {Boolean}
  */
-export function validFormProduct(reqbody, error = {}) {
+export function validForm(reqbody, error = {}) {
   if (!isVarEmpty(reqbody)) {
     for (let element in reqbody) {
       if (
@@ -114,4 +114,13 @@ export function validPassword(value, errors = {}) {
     errors["password"] = "Le mot de passe doit etre au moins de 8 caractères";
   }
   return errors;
+}
+export function isValidUserFields(bodyUserRequest, validField) {
+  let errors = {};
+  for (let field in bodyUserRequest) {
+    if (!validField.includes(field)) {
+      errors[field] = "Le champs est requis";
+    }
+  }
+  return isEmptyObject(errors);
 }
