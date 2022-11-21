@@ -39,6 +39,7 @@ export default class UserCTRL {
         // On crypt notre mot de passe, une fois qu'il est crypter on enregistrer l'utilisateur
         const password = await hash(req.body.password, this.defaultHash);
         const user = new UserMDL({
+          ...req.body,
           email: req.body.email,
           password,
         });
@@ -79,7 +80,7 @@ export default class UserCTRL {
    * @param {Function} next
    * @memberof UserCTRL
    */
-  login(req, res, next) {
+  async login(req, res, next) {
     const alert = new Alert(req, res);
     if (!isEmpty(req.body)) {
       const errors = {
@@ -87,40 +88,39 @@ export default class UserCTRL {
         ...validPassword(req.body.password),
       };
       if (isEmptyObject(errors)) {
-        return UserMDL.findOne({ email: req.body.email })
-          .then((user) => {
-            // On verifie si l'utilisateur a été trouver
-            if (isEmpty(user)) {
-              // Si l'utilisateur n'a pas été trouver on envois une reponse 401
-              return alert.danger("Email ou mot de passe incorrect", 401);
-            }
-            // L'utilisateur veut se connecter en meme temps on essaie de vefifier son identité en comporant si le mot de passe qu'il entrer est issue du meme mot de passe qui se trouve dans la base de donnée
-            compare(req.body.password, user.password)
-              .then((valid) => {
-                // On verifie si il y a une erreur d'authentification
-                if (!valid) {
-                  // L'utilisateur n'existe pas alors on envois une erreur arbitraire
-                  return alert.danger("Email ou mot de passe incorrect");
-                }
-                // L'utilisateur existe on envois alors son ID et un token d'authentification que l'on va generer par le serveur et le front se servira de l'utiliser à chaque requete de l'utilisateur et pour cela on va utiliser le package jsonWebTOKEN
-                return alert.makeAlert("Vous etes connecter", 200, "success", {
-                  userId: user._id,
-                  token: jwt.sign({ userId: user._id }, "NDEKOCODE_RANDOM", {
-                    expiresIn: "24h",
-                  }),
-                });
-              })
-              .catch((error) =>
-                alert.danger(
-                  "Erreur survenus lors de la connexion de l'utilisateur",
-                  500
-                )
-              );
-          })
-          .catch(() => alert.danger("Email ou mot de passe incorrect", 500));
+        try {
+          const user = await UserMDL.findOne({ email: req.body.email });
+
+          // On verifie si l'utilisateur a été trouver
+          if (isEmpty(user)) {
+            // Si l'utilisateur n'a pas été trouver on envois une reponse 401
+            return alert.danger("Email ou mot de passe incorrect", 401);
+          }
+
+          // L'utilisateur veut se connecter en meme temps on essaie de vefifier son identité en comporant si le mot de passe qu'il entrer est issue du meme mot de passe qui se trouve dans la base de donnée
+          const valid = await compare(req.body.password, user.password);
+          // On verifie si il y a une erreur d'authentification
+          if (!valid) {
+            // L'utilisateur n'existe pas alors on envois une erreur arbitraire
+            return alert.danger("Email ou mot de passe incorrect");
+          }
+
+          // L'utilisateur existe on envois alors son ID et un token d'authentification que l'on va generer par le serveur et le front se servira de l'utiliser à chaque requete de l'utilisateur et pour cela on va utiliser le package jsonWebTOKEN
+          return alert.makeAlert("Vous etes connecter", 200, "success", {
+            userId: user._id,
+            token: jwt.sign({ userId: user._id }, "NDEKOCODE_RANDOM", {
+              expiresIn: "24h",
+            }),
+          });
+        } catch (error) {
+          alert.danger(
+            "Erreur survenus lors de la connexion de l'utilisateur",
+            500
+          );
+        }
       }
 
-      return alert.danger("Email ou mot de passe invalide");
+      return alert.danger("Email ou mot de passe invalide", 401);
     }
     return alert.danger("Entrer des informations valides", 401);
   }
