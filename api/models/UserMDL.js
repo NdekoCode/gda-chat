@@ -34,5 +34,5 @@ const userSchema = new Schema({
   },
 });
 /** @type {Model} */
-const userMDL = new model("User", userSchema);
-export default userMDL;
+const UserMDL = new model("User", userSchema);
+export default UserMDL;
