@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { model, Schema } from "mongoose";
 /**
  * @typedef {object} User Le model de l'UTILISATEUR
  * @property {number} id l'identifiant de l'utilisateur
@@ -10,11 +10,11 @@ import { Schema, model } from "mongoose";
  *
  */
 const userSchema = new Schema({
-  firstname: {
+  firstName: {
     type: String,
     required: true,
   },
-  lastname: {
+  lastName: {
     type: String,
     required: true,
   },
@@ -30,6 +30,10 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
+  },
+  image: {
+    type: String,
+    required: false,
   },
 });
 /** @type {Model} */

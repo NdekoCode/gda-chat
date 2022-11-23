@@ -1,9 +1,9 @@
-import { chatMDL } from "../models/ChatMDL.js";
+import ChatMDL from "../models/ChatMDL.js";
 import { isEmpty } from "../utils/validators.js";
 
 export default class ChatCTRL {
   async home(req, res, next) {
-    const messages = await chatMDL.find({ userId: req.user_id });
+    const messages = await ChatMDL.find();
     return messages;
   }
   addMessage(req) {
