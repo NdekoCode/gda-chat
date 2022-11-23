@@ -1,8 +1,9 @@
-import morgan from "morgan";
 import { createWriteStream } from "fs";
-import { normalizePort, __dirname } from "../utils/utils.js";
-import { join } from "path";
 import { createServer } from "http";
+import morgan from "morgan";
+import { join } from "path";
+import { Server } from "socket.io";
+import { normalizePort, __dirname } from "../utils/utils.js";
 const httpConfig = (app) => {
   const PORT = normalizePort(process.env.PORT || 3500);
   app.use(
@@ -17,6 +18,9 @@ const httpConfig = (app) => {
   );
   app.set("port", PORT);
   const server = createServer(app);
+
+  // IO
+  const io = new Server(server);
   const handleError = (err) => {
     if (err.syscall === "listen") throw err;
     const address = server.address();
@@ -42,6 +46,21 @@ const httpConfig = (app) => {
     const bind =
       typeof address === "string" ? "pipe " + address : "port: " + PORT;
     console.log("Listening on " + bind);
+  });
+  // FIXED : Se connecter au socket, on detecte quand un utilisateur se connecter
+  io.on("connection", (socket) => {
+    console.log("Socket connection is initialized in backend");
+    socket.on("disconnect", () => {
+      console.log(" User disconnected");
+      socket.broadcast.emit("leaveUser", socket.pseudo);
+    });
+    // Detecter quand un utilisateur se connecte ou se deconnecte
+    socket.on("enter_pseudo", (pseudo) => {
+      // On dit que la socket de mon utilisateur va avoir un s
+      socket.pseudo = pseudo;
+      // FIXED: On emet que on a un utilisateur qui vient de se connecter
+      socket.broadcast.emit("newUser", pseudo);
+    });
   });
   server.listen(PORT, () => {
     console.log("Server is listening at " + PORT);
