@@ -1,14 +1,14 @@
-// TODO: - Chat Message
+// TODO: #4 - Chat Message
 
-// TODO: - Private Message
+// TODO: #5 - Private Message
 
-// TODO: - Room message
+// TODO: #6 - Room message
 
-// TODO: - User online
+// TODO: #7 - User online
 
-// TODO: - User disconnect
+// TODO: #8 - User disconnect
 
-// TODO: - User writing or typing
+// TODO: #9 - User writing or typing
 
 import dotenv from "dotenv";
 import app from "./app.js";
