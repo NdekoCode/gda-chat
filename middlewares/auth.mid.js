@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
-dotenv.config();
 import jwt from "jsonwebtoken";
 import Alert from "../utils/Alert.js";
+dotenv.config();
 
 export default async function auth(req, res, next) {
   const alert = new Alert(req, res);
@@ -10,6 +10,7 @@ export default async function auth(req, res, next) {
     const decodedToken = jwt.verify(token, process.env.SECRET_WORD);
     const userId = decodedToken.userId;
     req.auth = { userId };
+    next();
   } catch (error) {
     return alert.danger(error.message, 401);
   }

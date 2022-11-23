@@ -121,9 +121,11 @@ export default class UserCTRL {
           // L'utilisateur existe on envois alors son ID et un token d'authentification que l'on va generer par le serveur et le front se servira de l'utiliser à chaque requete de l'utilisateur et pour cela on va utiliser le package jsonWebTOKEN
           return alert.makeAlert("Vous etes connecter", 200, "success", {
             userId: user._id,
-            token: jwt.sign({ userId: user._id }, "NDEKOCODE_RANDOM", {
-              expiresIn: "24h",
-            }),
+            token:
+              "Bearer Tokens " +
+              jwt.sign({ userId: user._id }, process.env.SECRET_WORD, {
+                expiresIn: "24h",
+              }),
           });
         } catch (error) {
           return alert.danger(
