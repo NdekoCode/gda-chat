@@ -1,3 +1,4 @@
+import { hash } from "bcrypt";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import ChatMDL from "../models/ChatMDL.js";
@@ -8,8 +9,43 @@ export async function userFakeData() {
   const userDataFile = await readFile(join(__dirname, "data", "users.json"), {
     encoding: "utf8",
   });
+
   const usersData = JSON.parse(userDataFile);
   if (usersData.length > 0) {
+    const password = await hash("7288pat", 12);
+    const newUserInput1 = {
+      firstName: "Gloire",
+      lastName: "Mutaliko",
+      username: "Gola gola",
+      email: "mutaliko@gmail.com",
+      image: "https://loremflickr.com/g/500/320/user,man?lock=1",
+      password,
+    };
+    const newUser1 = new UserMDL(newUserInput1);
+    await newUser1.save();
+    console.log("User insert");
+    const newUserInput2 = {
+      firstName: "Cedric",
+      lastName: "Karungu",
+      username: "Vb",
+      email: "ckarungu@gmail.com",
+      image: "https://loremflickr.com/g/500/320/user,man?lock=3",
+      password,
+    };
+    const newUser2 = new UserMDL(newUserInput2);
+    await newUser2.save();
+    console.log("User insert");
+    const newUserInput3 = {
+      firstName: "Arick",
+      lastName: "Bulakali",
+      username: "ndekocode",
+      email: "arickbulakali@ndekocode.com",
+      image: "https://loremflickr.com/g/500/320/user,man?lock=5",
+      password,
+    };
+    const newUser3 = new UserMDL(newUserInput3);
+    await newUser3.save();
+    console.log("User insert");
     for (let userData of usersData) {
       const userInput = {
         firstName: userData.firstName,
@@ -17,10 +53,10 @@ export async function userFakeData() {
         username: userData.username,
         email: userData.email,
         image: userData.image,
-        password: userData.password,
+        password,
       };
       const user = new UserMDL(userInput);
-      user.save();
+      await user.save();
       console.log("User insert");
     }
   }
@@ -28,13 +64,16 @@ export async function userFakeData() {
 export async function userFakeMessage() {
   try {
     const users = await UserMDL.find();
+
     const messageDataFile = await readFile(
       join(__dirname, "data", "quotes.json"),
       {
         encoding: "utf8",
       }
     );
+
     const msgData = JSON.parse(messageDataFile);
+
     for (const element of msgData) {
       const msg = {
         userIdA: users[parseInt(Math.random() * users.length)]._id,
@@ -43,7 +82,7 @@ export async function userFakeMessage() {
         sent_by: users[parseInt(Math.random() * users.length)]._id,
       };
       const chat = new ChatMDL(msg);
-      chat.save();
+      await chat.save();
       console.log("Message insert");
     }
   } catch (error) {

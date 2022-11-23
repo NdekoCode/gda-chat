@@ -7,7 +7,7 @@ import { __dirname } from "./utils/utils.js";
 const app = express();
 app.use(
   cors({
-    origin: "localhost:5173",
+    origin: ["http://localhost:5174", "http://localhost:5173"],
   })
 );
 app.use(express.json());
