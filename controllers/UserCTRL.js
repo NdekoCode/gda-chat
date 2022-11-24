@@ -19,8 +19,8 @@ import {
 export default class UserCTRL {
   static defaultHash = 12;
   static userFields = [
-    "firstname",
-    "lastname",
+    "firstName",
+    "lastName",
     "email",
     "password",
     "username",
@@ -40,6 +40,7 @@ export default class UserCTRL {
       ...ValidateEmail(req.body.email),
       ...validPassword(req.body.password),
     };
+    console.log(errors, req.body);
     // Si l'objet des erreurs est vide et que on a des champs valide alors il n'y a pas d'erreur dans notre requete
     if (
       isEmptyObject(errors) &&
@@ -125,6 +126,7 @@ export default class UserCTRL {
               firstName: user.firstName,
               lastName: user.lastName,
               username: user.username,
+              image: user?.image,
               token: jwt.sign({ userId: user._id }, process.env.SECRET_WORD, {
                 expiresIn: "24h",
               }),
