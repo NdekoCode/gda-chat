@@ -12,6 +12,15 @@ export default async function auth(req, res, next) {
     req.auth = { userId };
     next();
   } catch (error) {
-    return alert.danger(error.message, 401);
+    if (process.env.ENVIRONNEMENT === "DEVELOPMENT") {
+      return alert.danger(
+        `Vous devez etre connecter pour acceder à cette page ${error.message} ${error.stack}`,
+        401
+      );
+    }
+    return alert.danger(
+      `Vous devez etre connecter pour acceder à cette page`,
+      401
+    );
   }
 }

@@ -99,11 +99,11 @@ export default class UserCTRL {
         ...ValidateEmail(req.body.email),
         ...validPassword(req.body.password),
       };
+      console.log(errors);
       if (isEmptyObject(errors)) {
-        console.log(req.body);
         try {
           const user = await UserMDL.findOne({ email: req.body.email });
-
+          console.log(user, req.body);
           // On verifie si l'utilisateur a été trouver
           if (isVarEmpty(user)) {
             // Si l'utilisateur n'a pas été trouver on envois une reponse 401
@@ -117,15 +117,18 @@ export default class UserCTRL {
             // L'utilisateur n'existe pas alors on envois une erreur arbitraire
             return alert.danger("Email ou mot de passe incorrect");
           }
-
           // L'utilisateur existe on envois alors son ID et un token d'authentification que l'on va generer par le serveur et le front se servira de l'utiliser à chaque requete de l'utilisateur et pour cela on va utiliser le package jsonWebTOKEN
           return alert.makeAlert("Vous etes connecter", 200, "success", {
-            userId: user._id,
-            token:
-              "Bearer Tokens " +
-              jwt.sign({ userId: user._id }, process.env.SECRET_WORD, {
+            userData: {
+              userId: user._id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              username: user.username,
+              token: jwt.sign({ userId: user._id }, process.env.SECRET_WORD, {
                 expiresIn: "24h",
               }),
+            },
           });
         } catch (error) {
           return alert.danger(
