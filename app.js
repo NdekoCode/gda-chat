@@ -8,7 +8,11 @@ import { __dirname } from "./utils/utils.js";
 const app = express();
 app.use(
   cors({
-    origin: ["http://localhost:5174", "http://localhost:5173"],
+    origin: [
+      "http://localhost:5174",
+      "http://localhost:5173",
+      "https://gda-chat.netlify.app",
+    ],
   })
 );
 app.use(express.json());
