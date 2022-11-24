@@ -13,8 +13,14 @@ export default class ChatCTRL {
     }
   }
   addMessage(req) {
-    const bodyRequest = { ...req.body };
-    if (isEmpty(bodyRequest)) {
+    const bodyRequest = {
+      ...req.body,
+      userIdA: req.auth.userId,
+      userIdB: req.params.id,
+      send_by: req.auth.userId,
+    };
+    if (!isEmpty(bodyRequest)) {
+      const chat = new ChatMDL(bodyRequest);
     }
   }
 }
