@@ -110,8 +110,8 @@ export function ValidateEmail(value, errors = {}) {
   return false;
 }
 export function validPassword(value, errors = {}) {
-  if (isStringEmpty(value) || value.length < 8) {
-    errors["password"] = "Le mot de passe doit etre au moins de 8 caractères";
+  if (isStringEmpty(value) || value.length < 5) {
+    errors["password"] = "Le mot de passe doit etre au moins de 5 caractères";
   }
   return errors;
 }

@@ -26,10 +26,12 @@ export default class Alert {
    */
   makeAlert(message, statusCode, type, otherData = {}) {
     return this.res.status(statusCode).send({
-      statusCode,
-      message,
+      alert: {
+        statusCode,
+        message,
+        type,
+      },
       ...otherData,
-      type,
     });
   }
 
