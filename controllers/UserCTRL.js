@@ -33,7 +33,7 @@ export default class UserCTRL {
    * @param {Function} next
    * @memberof UserCTRL
    */
-  async signup(req, res, next) {
+  async register(req, res, next) {
     const alert = new Alert(req, res);
     const errors = {
       ...validForm(req.body),
