@@ -2,6 +2,7 @@ import { hash } from "bcrypt";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import ChatMDL from "../models/ChatMDL.js";
+import ContactMDL from "../models/ContactMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import { __dirname } from "./utils.js";
 
@@ -79,7 +80,7 @@ export async function userFakeMessage() {
         userIdA: users[parseInt(Math.random() * users.length)]._id,
         userIdB: users[parseInt(Math.random() * users.length)]._id,
         message: element.quote,
-        sent_by: users[parseInt(Math.random() * users.length)]._id,
+        send_by: users[parseInt(Math.random() * users.length)]._id,
       };
       const chat = new ChatMDL(msg);
       await chat.save();
@@ -87,5 +88,29 @@ export async function userFakeMessage() {
     }
   } catch (error) {
     console.log("Failed to load users ", error.message);
+  }
+}
+export async function userFakeContact() {
+  try {
+    const users = await UserMDL.find();
+    const contactData = [];
+    let item = 0;
+    for (let user of users) {
+      contactData.push(user._id);
+      item++;
+      if (item === 10) {
+        const contact = new ContactMDL({
+          users: contactData,
+          userId: users[parseInt(Math.random() * 11) + 90]._id,
+        });
+        await contact.save();
+        contactData.length = 0;
+        item = 0;
+        console.log("Contact add ...");
+        continue;
+      }
+    }
+  } catch (error) {
+    console.log("Failed to add contact users ", error.message);
   }
 }

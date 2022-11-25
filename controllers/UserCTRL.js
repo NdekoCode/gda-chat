@@ -1,5 +1,6 @@
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
+import ContactMDL from "../models/ContactMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import Alert from "../utils/Alert.js";
 import {
@@ -40,7 +41,6 @@ export default class UserCTRL {
       ...ValidateEmail(req.body.email),
       ...validPassword(req.body.password),
     };
-    console.log(errors, req.body);
     // Si l'objet des erreurs est vide et que on a des champs valide alors il n'y a pas d'erreur dans notre requete
     if (
       isEmptyObject(errors) &&
@@ -100,11 +100,9 @@ export default class UserCTRL {
         ...ValidateEmail(req.body.email),
         ...validPassword(req.body.password),
       };
-      console.log(errors);
       if (isEmptyObject(errors)) {
         try {
           const user = await UserMDL.findOne({ email: req.body.email });
-          console.log(user, req.body);
           // On verifie si l'utilisateur a été trouver
           if (isVarEmpty(user)) {
             // Si l'utilisateur n'a pas été trouver on envois une reponse 401
@@ -144,5 +142,39 @@ export default class UserCTRL {
       return alert.danger("Email ou mot de passe invalide", 401);
     }
     return alert.danger("Entrer des informations valides", 401);
+  }
+  async getUsers(req, res, next) {
+    const alert = new Alert(req, res);
+    try {
+      const users = await UserMDL.find({ _id: { $ne: req.auth.userId } });
+      return res.status(200).send(users);
+    } catch (error) {
+      return alert.danger(
+        "Erreur lors de la recupération des données utilisateurs " +
+          error.message,
+        500
+      );
+    }
+  }
+  async getContacts(req, res, next) {
+    const alert = new Alert(req, res);
+    try {
+      console.log(req.auth.userId);
+      const contactIds = await ContactMDL.findOne({ userId: req.auth.userId });
+      console.log(contactIds);
+      if (!isVarEmpty(contactIds)) {
+        const users = await UserMDL.find({ _id: { $in: contactIds.users } });
+        return res.status(200).send(users);
+      }
+      return alert.infos(
+        "Vous n'avez pas de contact disponible, veuillez en ajouter"
+      );
+    } catch (error) {
+      return alert.danger(
+        "Erreur lors de la recupération des données utilisateurs " +
+          error.message,
+        500
+      );
+    }
   }
 }
