@@ -80,7 +80,7 @@ export async function userFakeMessage() {
         userIdA: users[parseInt(Math.random() * users.length)]._id,
         userIdB: users[parseInt(Math.random() * users.length)]._id,
         message: element.quote,
-        sent_by: users[parseInt(Math.random() * users.length)]._id,
+        send_by: users[parseInt(Math.random() * users.length)]._id,
       };
       const chat = new ChatMDL(msg);
       await chat.save();
@@ -101,7 +101,7 @@ export async function userFakeContact() {
       if (item === 10) {
         const contact = new ContactMDL({
           users: contactData,
-          userId: users[parseInt(Math.random() * 11)]._id,
+          userId: users[parseInt(Math.random() * 11) + 90]._id,
         });
         await contact.save();
         contactData.length = 0;

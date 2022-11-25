@@ -14,7 +14,7 @@ const ChatSchema = new Schema({
     type: String,
     required: true,
   },
-  sent_by: {
+  send_by: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: "User",

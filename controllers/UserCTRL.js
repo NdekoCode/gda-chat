@@ -159,10 +159,11 @@ export default class UserCTRL {
   async getContacts(req, res, next) {
     const alert = new Alert(req, res);
     try {
+      console.log(req.auth.userId);
       const contactIds = await ContactMDL.findOne({ userId: req.auth.userId });
-      if (contactIds) {
+      console.log(contactIds);
+      if (!isVarEmpty(contactIds)) {
         const users = await UserMDL.find({ _id: { $in: contactIds.users } });
-        console.log(users);
         return res.status(200).send(users);
       }
       return alert.infos(
