@@ -1,5 +1,6 @@
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
+import ContactMDL from "../models/ContactMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import Alert from "../utils/Alert.js";
 import {
@@ -147,6 +148,26 @@ export default class UserCTRL {
     try {
       const users = await UserMDL.find({ _id: { $ne: req.auth.userId } });
       return res.status(200).send(users);
+    } catch (error) {
+      return alert.danger(
+        "Erreur lors de la recupération des données utilisateurs " +
+          error.message,
+        500
+      );
+    }
+  }
+  async getContacts(req, res, next) {
+    const alert = new Alert(req, res);
+    try {
+      const contactIds = await ContactMDL.findOne({ userId: req.auth.userId });
+      if (contactIds) {
+        const users = await UserMDL.find({ _id: { $in: contactIds.users } });
+        console.log(users);
+        return res.status(200).send(users);
+      }
+      return alert.infos(
+        "Vous n'avez pas de contact disponible, veuillez en ajouter"
+      );
     } catch (error) {
       return alert.danger(
         "Erreur lors de la recupération des données utilisateurs " +

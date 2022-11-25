@@ -9,3 +9,4 @@ const ContactSchema = new Schema({
   userId: Schema.Types.ObjectId,
 });
 const ContactMDL = new model("Contact", ContactSchema);
+export default ContactMDL;
