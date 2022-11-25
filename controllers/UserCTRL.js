@@ -161,7 +161,6 @@ export default class UserCTRL {
     try {
       console.log(req.auth.userId);
       const contactIds = await ContactMDL.findOne({ userId: req.auth.userId });
-      console.log(contactIds);
       if (!isVarEmpty(contactIds)) {
         const users = await UserMDL.find({ _id: { $in: contactIds.users } });
         return res.status(200).send(users);

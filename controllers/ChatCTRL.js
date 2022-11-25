@@ -27,8 +27,6 @@ export default class ChatCTRL {
         const bodyRequest = {
           ...dataForm,
           userIdA: req.auth.userId,
-          userIdB: req.params.id,
-          send_by: req.auth.userId,
         };
         const chat = new ChatMDL(bodyRequest);
         await chat.save();
@@ -46,7 +44,7 @@ export default class ChatCTRL {
     const alert = new Alert(req, res);
     const userId = req.params.id;
     try {
-      console.log(userId, req.auth.userId);
+      console.log(userId);
       const chatsUsers = await ChatMDL.find({
         $and: [
           {
@@ -57,6 +55,8 @@ export default class ChatCTRL {
           },
         ],
       });
+
+      console.log(chatsUsers);
       return res.send(chatsUsers);
     } catch (error) {
       return alert.danger(error.message);
