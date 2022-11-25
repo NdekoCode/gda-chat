@@ -145,11 +145,12 @@ export default class UserCTRL {
   async getUsers(req, res, next) {
     const alert = new Alert(req, res);
     try {
-      const users = await UserMDL.find();
+      const users = await UserMDL.find({ _id: { $ne: req.auth.userId } });
       return res.status(200).send(users);
     } catch (error) {
       return alert.danger(
-        "Erreur lors de la recupération des données utilisateurs",
+        "Erreur lors de la recupération des données utilisateurs " +
+          error.message,
         500
       );
     }

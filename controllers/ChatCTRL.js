@@ -23,4 +23,18 @@ export default class ChatCTRL {
       const chat = new ChatMDL(bodyRequest);
     }
   }
+  async getChatUser(req, res, next) {
+    const alert = new Alert(req, res);
+    const userId = req.params.id;
+    try {
+      console.log(userId, req.auth.userId);
+      const chatsUsers = await ChatMDL.find({
+        userIdA: userId,
+        userIdB: req.auth.userId,
+      });
+      return res.send(chatsUsers);
+    } catch (error) {
+      return alert.danger(error.message);
+    }
+  }
 }
