@@ -165,17 +165,29 @@ export default class UserCTRL {
       });
       const contactIds = [
         ...new Set(
-          messageUsers.map((data) => {
-            if (data.receiver !== req.auth.userId) {
-              return data.receiver;
-            } else if (data.sender !== req.auth.userId) {
-              return data.sender;
+          messageUsers.map(({ sender, receiver }) => {
+            console.log(
+              sender !== req.auth.userId,
+              receiver === req.auth.userId
+            );
+            if (sender !== req.auth.userId) {
+              return sender;
+            } else if (receiver !== req.auth.userId) {
+              return receiver;
             }
           })
         ),
       ];
+      console.log(contactIds);
       if (!isVarEmpty(contactIds)) {
-        const users = await UserMDL.find({ _id: { $in: contactIds.users } });
+        const users = await UserMDL.find({ _id: { $in: contactIds } }, [
+          "_id",
+          "firstName",
+          "lastName",
+          "username",
+          "email",
+        ]);
+        console.log(users);
         return res.status(200).send(users);
       }
       return alert.infos(

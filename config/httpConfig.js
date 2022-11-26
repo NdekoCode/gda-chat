@@ -45,14 +45,14 @@ const httpConfig = (app) => {
           $or: [
             {
               $and: [
-                { userIdA: { $eq: users.userInterlocutorId } },
-                { userIdB: { $eq: users.userConnectId } },
+                { sender: { $eq: users.userInterlocutorId } },
+                { receiver: { $eq: users.userConnectId } },
               ],
             },
             {
               $and: [
-                { userIdB: { $eq: users.userInterlocutorId } },
-                { userIdA: { $eq: users.userConnectId } },
+                { receiver: { $eq: users.userInterlocutorId } },
+                { sender: { $eq: users.userConnectId } },
               ],
             },
           ],
@@ -69,7 +69,7 @@ const httpConfig = (app) => {
       socket.join(user.userId);
     });
     socket.on("user_writing", (user) => {
-      console.log(user.firstName + " EST ENTRER D'ECRIRE ", user._id);
+      console.log(user.firstName + " EST ENTRER D'ECRIRE ", user.userId);
     });
     socket.on("user_connected", (user) => {
       console.log(user.firstName + " est connected ", user.userId);
