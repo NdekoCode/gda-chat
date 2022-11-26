@@ -1,6 +1,6 @@
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
-import ContactMDL from "../models/ContactMDL.js";
+import ChatMDL from "../models/ChatMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import Alert from "../utils/Alert.js";
 import {
@@ -160,7 +160,20 @@ export default class UserCTRL {
     const alert = new Alert(req, res);
     try {
       console.log(req.auth.userId);
-      const contactIds = await ContactMDL.findOne({ userId: req.auth.userId });
+      const messageUsers = await ChatMDL.find({
+        $or: [{ receiver: req.auth.userId }, { sender: req.auth.userId }],
+      });
+      const contactIds = [
+        ...new Set(
+          messageUsers.map((data) => {
+            if (data.receiver !== req.auth.userId) {
+              return data.receiver;
+            } else if (data.sender !== req.auth.userId) {
+              return data.sender;
+            }
+          })
+        ),
+      ];
       if (!isVarEmpty(contactIds)) {
         const users = await UserMDL.find({ _id: { $in: contactIds.users } });
         return res.status(200).send(users);
