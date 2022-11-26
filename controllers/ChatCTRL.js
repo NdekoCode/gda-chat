@@ -7,29 +7,24 @@ export default class ChatCTRL {
     const alert = new Alert(req, res);
     try {
       const messages = await ChatMDL.find({
-        $or: [
-          { userIdA: req.auth.userId },
-          { userIdB: req.auth.userId },
-          { send_by: req.auth.userId },
-        ],
+        $or: [{ sender: req.auth.userId }, { receiver: req.auth.userId }],
       });
       return res.send(messages);
     } catch (error) {
       return alert.danger("Erreurs lors de la récuperation des messages");
     }
   }
-  async addMessage(req) {
+  async addMessage(req, res) {
     const alert = new Alert(req, res);
-    const dataForm = { ...req.body, userIdB: req.params.id };
-    const errors = validForm(dataForm);
+    const bodyRequest = {
+      ...req.body,
+      receiver: req.params.id,
+      sender: req.auth.userId,
+    };
+    const errors = validForm(bodyRequest);
+    console.log(bodyRequest, errors);
     if (isEmpty(errors)) {
       try {
-        const bodyRequest = {
-          ...dataForm,
-          userIdA: req.auth.userId,
-          userIdB: req.params.id,
-          send_by: req.auth.userId,
-        };
         const chat = new ChatMDL(bodyRequest);
         await chat.save();
         return alert.success("Messages ajouter avec succès");
@@ -45,18 +40,21 @@ export default class ChatCTRL {
   async getChatUser(req, res, next) {
     const alert = new Alert(req, res);
     const userId = req.params.id;
+    const userConnectedId = req.auth.userId;
     try {
-      console.log(userId, req.auth.userId);
+      console.log(userId);
       const chatsUsers = await ChatMDL.find({
-        $and: [
+        $or: [
           {
-            $or: [{ userIdA: userId }, { userIdB: req.auth.userId }],
+            $and: [{ receiver: userId }, { sender: userConnectedId }],
           },
           {
-            $or: [{ userIdB: userId }, { userIdA: req.auth.userId }],
+            $and: [{ sender: userId }, { receiver: userConnectedId }],
           },
         ],
       });
+
+      console.log(chatsUsers);
       return res.send(chatsUsers);
     } catch (error) {
       return alert.danger(error.message);

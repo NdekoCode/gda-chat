@@ -26,7 +26,7 @@ dotenv.config();
 database()
   .then(() => {
     httpConfig(app);
-    // Promise.resolve(userFakeContact());
+    // Promise.resolve(userFakeMessage());
   })
   .catch((err) => {
     console.log("Connection to the database failed", err.message);

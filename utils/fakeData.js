@@ -2,7 +2,6 @@ import { hash } from "bcrypt";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import ChatMDL from "../models/ChatMDL.js";
-import ContactMDL from "../models/ContactMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import { __dirname } from "./utils.js";
 
@@ -77,10 +76,9 @@ export async function userFakeMessage() {
 
     for (const element of msgData) {
       const msg = {
-        userIdA: users[parseInt(Math.random() * users.length)]._id,
-        userIdB: users[parseInt(Math.random() * users.length)]._id,
+        receiver: users[parseInt(Math.random() * users.length)]._id,
+        sender: users[parseInt(Math.random() * users.length)]._id,
         message: element.quote,
-        send_by: users[parseInt(Math.random() * users.length)]._id,
       };
       const chat = new ChatMDL(msg);
       await chat.save();
@@ -90,7 +88,7 @@ export async function userFakeMessage() {
     console.log("Failed to load users ", error.message);
   }
 }
-export async function userFakeContact() {
+/* export async function userFakeContact() {
   try {
     const users = await UserMDL.find();
     const contactData = [];
@@ -113,4 +111,4 @@ export async function userFakeContact() {
   } catch (error) {
     console.log("Failed to add contact users ", error.message);
   }
-}
+} */
