@@ -5,6 +5,7 @@ import { join } from "path";
 import { Server } from "socket.io";
 import ChatMDL from "../models/ChatMDL.js";
 import { normalizePort, __dirname } from "../utils/utils.js";
+import { isEmpty, validForm } from "../utils/validators.js";
 const httpConfig = (app) => {
   const PORT = normalizePort(process.env.PORT || 3500);
   app.use(
@@ -57,7 +58,7 @@ const httpConfig = (app) => {
             },
           ],
         });
-        socket.emit("load_messages", { messages: JSON.stringify(messages) });
+        socket.emit("load_messages", JSON.stringify(messages));
       } catch (error) {
         console.log(
           "error lors de la récupération des messages " + error.message
@@ -74,9 +75,22 @@ const httpConfig = (app) => {
     socket.on("user_connected", (user) => {
       console.log(user.firstName + " est connected ", user.userId);
     });
-    socket.on("send_message", (data) => {
-      console.log("Message reçus..." + data.message);
-      socket.to(data.userIdB).emit("received_message", data);
+    socket.on("send_message", async (data) => {
+      console.log("Message reçus..." + JSON.stringify(data));
+      const errors = validForm(data);
+      console.log(data, errors);
+      if (isEmpty(errors)) {
+        try {
+          const chat = new ChatMDL(data);
+          await chat.save();
+          console.log(data.receiver);
+          socket.in(data.receiver).emit("received_message", data);
+        } catch (error) {
+          return console.log(
+            "Erreur survenus lors de l'envois du message " + error.message
+          );
+        }
+      }
     });
     // Detecter quand un utilisateur se connecte ou se deconnecte
   });
