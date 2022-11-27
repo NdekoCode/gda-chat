@@ -163,17 +163,17 @@ export default class UserCTRL {
       const messageUsers = await ChatMDL.find({
         $or: [{ receiver: req.auth.userId }, { sender: req.auth.userId }],
       });
-      const contactIds = [
+      let contactIds = [
         ...new Set(
           messageUsers.map(({ sender, receiver }) => {
             console.log(
               sender !== req.auth.userId,
               receiver === req.auth.userId
             );
-            if (sender !== req.auth.userId) {
-              return sender;
-            } else if (receiver !== req.auth.userId) {
-              return receiver;
+            if (sender.toString() !== req.auth.userId.toString()) {
+              return sender.toString();
+            } else if (receiver.toString() !== req.auth.userId.toString()) {
+              return receiver.toString();
             }
           })
         ),
@@ -187,7 +187,6 @@ export default class UserCTRL {
           "username",
           "email",
         ]);
-        console.log(users);
         return res.status(200).send(users);
       }
       return alert.infos(
