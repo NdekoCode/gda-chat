@@ -69,11 +69,20 @@ const httpConfig = (app) => {
       console.log("new user connected " + user.firstName);
       socket.join(user.userId);
     });
-    socket.on("user_writing", (user) => {
-      console.log(user.firstName + " EST ENTRER D'ECRIRE ", user.userId);
-    });
+
     socket.on("user_connected", (user) => {
       console.log(user.firstName + " est connected ", user.userId);
+    });
+    socket.on("user_writing", (data) => {
+      console.log(data.isWriting);
+      socket.to(data.toSend._id).emit("typing", {
+        isWriting: data.isWriting,
+        writeTo: data.toSend,
+      });
+      console.log(
+        data.isWriting.firstName + " EST ENTRER D'ECRIRE ",
+        data.isWriting.userId
+      );
     });
     socket.on("send_message", async (data) => {
       console.log("Message reçus..." + JSON.stringify(data));
