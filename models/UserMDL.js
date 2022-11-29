@@ -36,6 +36,11 @@ const userSchema = new Schema(
       type: String,
       required: false,
     },
+    lastConnection: {
+      type: Date,
+      required: false,
+      default: Date.now(),
+    },
   },
   {
     timestamps: true,

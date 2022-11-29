@@ -1,5 +1,6 @@
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
+import IO from "../config/socket.io.js";
 import ChatMDL from "../models/ChatMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import Alert from "../utils/Alert.js";
@@ -83,7 +84,7 @@ export default class UserCTRL {
         );
       }
     }
-    return alert.danger(errors, 401);
+    return alert.danger(errors["error"], 401);
   }
   /**
    * @description Pour connecter des utilisateurs existants
@@ -117,14 +118,20 @@ export default class UserCTRL {
             return alert.danger("Email ou mot de passe incorrect");
           }
           // L'utilisateur existe on envois alors son ID et un token d'authentification que l'on va generer par le serveur et le front se servira de l'utiliser à chaque requete de l'utilisateur et pour cela on va utiliser le package jsonWebTOKEN
+          const userConnected = {
+            userId: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            username: user.username,
+            image: user?.image,
+          };
+          const socket = IO.getIO();
+
+          socket.emit("user_connected", userConnected);
           return alert.makeAlert("Vous etes connecter", 200, "success", {
             userData: {
-              userId: user._id,
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              username: user.username,
-              image: user?.image,
+              ...userConnected,
               token: jwt.sign({ userId: user._id }, process.env.SECRET_WORD, {
                 expiresIn: "24h",
               }),
@@ -166,10 +173,6 @@ export default class UserCTRL {
       let contactIds = [
         ...new Set(
           messageUsers.map(({ sender, receiver }) => {
-            console.log(
-              sender !== req.auth.userId,
-              receiver === req.auth.userId
-            );
             if (sender.toString() !== req.auth.userId.toString()) {
               return sender.toString();
             } else if (receiver.toString() !== req.auth.userId.toString()) {
@@ -178,13 +181,13 @@ export default class UserCTRL {
           })
         ),
       ];
-      console.log(contactIds);
       if (!isVarEmpty(contactIds)) {
         const users = await UserMDL.find({ _id: { $in: contactIds } }, [
           "_id",
           "firstName",
           "lastName",
           "username",
+          "image",
           "email",
         ]);
         return res.status(200).send(users);
@@ -199,5 +202,14 @@ export default class UserCTRL {
         500
       );
     }
+  }
+  async updateUser(req, res, next) {
+    const id = req.params.id;
+    const bodyRequest = { ...req.body };
+    delete bodyRequest._id;
+    delete bodyRequest.userId;
+    try {
+      const user = await UserMDL.findByIdAndUpdate(id, {});
+    } catch (error) {}
   }
 }

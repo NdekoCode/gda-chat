@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-dotenv.config();
 import { connect } from "mongoose";
+dotenv.config();
 const dbURL = process.env.DB_URL;
 const connectionParams = {
   useNewUrlParser: true,
