@@ -36,12 +36,15 @@ export default class UserCTRL {
    * @memberof UserCTRL
    */
   async register(req, res, next) {
+    UserCTRL.userFields.push("confpassword");
     const alert = new Alert(req, res);
+
     const errors = {
       ...validForm(req.body),
       ...ValidateEmail(req.body.email),
-      ...validPassword(req.body.password),
+      ...validPassword(req.body.password, req.body.confpassword),
     };
+
     // Si l'objet des erreurs est vide et que on a des champs valide alors il n'y a pas d'erreur dans notre requete
     if (
       isEmptyObject(errors) &&
@@ -51,6 +54,7 @@ export default class UserCTRL {
         // Cette methode prend deux argument, la chaine que l'on veut crypter et combien de fois on souhaite le crypter
         // On crypt notre mot de passe, une fois qu'il est crypter on enregistrer l'utilisateur
         const password = await hash(req.body.password, UserCTRL.defaultHash);
+
         const user = new UserMDL({
           ...req.body,
           email: req.body.email,
@@ -60,11 +64,13 @@ export default class UserCTRL {
         // On verifie si l'utilisateur existe pour eviter la duplication des données
         return UserMDL.exists({ email: req.body.email }, (err, result) => {
           if (err) return err;
+
           if (result)
             return alert.danger(
               "Cet email est déja pris, veuillez vous connecter avec un autre e-mail",
               309
             );
+
           // Si l'utilisateur n'existe pas alors on l'ajoute dans notre base de donnée
           return user
             .save()
@@ -96,14 +102,17 @@ export default class UserCTRL {
    */
   async login(req, res, next) {
     const alert = new Alert(req, res);
+
     if (!isEmpty(req.body)) {
       const errors = {
         ...ValidateEmail(req.body.email),
         ...validPassword(req.body.password),
       };
+
       if (isEmptyObject(errors)) {
         try {
           const user = await UserMDL.findOne({ email: req.body.email });
+
           // On verifie si l'utilisateur a été trouver
           if (isVarEmpty(user)) {
             // Si l'utilisateur n'a pas été trouver on envois une reponse 401
@@ -112,6 +121,7 @@ export default class UserCTRL {
 
           // L'utilisateur veut se connecter en meme temps on essaie de vefifier son identité en comporant si le mot de passe qu'il entrer est issue du meme mot de passe qui se trouve dans la base de donnée
           const valid = await compare(req.body.password, user.password);
+
           // On verifie si il y a une erreur d'authentification
           if (!valid) {
             // L'utilisateur n'existe pas alors on envois une erreur arbitraire
@@ -120,9 +130,9 @@ export default class UserCTRL {
           // L'utilisateur existe on envois alors son ID et un token d'authentification que l'on va generer par le serveur et le front se servira de l'utiliser à chaque requete de l'utilisateur et pour cela on va utiliser le package jsonWebTOKEN
           const userConnected = {
             userId: user._id,
-            email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
+            email: user.email,
             username: user.username,
             image: user?.image,
           };
@@ -132,6 +142,7 @@ export default class UserCTRL {
           return alert.makeAlert("Vous etes connecter", 200, "success", {
             userData: {
               ...userConnected,
+              // Le token va contenir uniquement l'id de l'utilisateur connecter
               token: jwt.sign({ userId: user._id }, process.env.SECRET_WORD, {
                 expiresIn: "24h",
               }),
@@ -153,7 +164,7 @@ export default class UserCTRL {
   async getUsers(req, res, next) {
     const alert = new Alert(req, res);
     try {
-      const users = await UserMDL.find({ _id: { $ne: req.auth.userId } });
+      const users = await UserMDL.find({ _id: { $ne: req.authUser._id } });
       return res.status(200).send(users);
     } catch (error) {
       return alert.danger(
@@ -166,16 +177,16 @@ export default class UserCTRL {
   async getContacts(req, res, next) {
     const alert = new Alert(req, res);
     try {
-      console.log(req.auth.userId);
+      console.log(req.authUser._id);
       const messageUsers = await MessageMDL.find({
-        $or: [{ receiver: req.auth.userId }, { sender: req.auth.userId }],
+        $or: [{ receiver: req.authUser._id }, { sender: req.authUser._id }],
       });
       let contactIds = [
         ...new Set(
           messageUsers.map(({ sender, receiver }) => {
-            if (sender.toString() !== req.auth.userId.toString()) {
+            if (sender.toString() !== req.authUser._id.toString()) {
               return sender.toString();
-            } else if (receiver.toString() !== req.auth.userId.toString()) {
+            } else if (receiver.toString() !== req.authUser._id.toString()) {
               return receiver.toString();
             }
           })

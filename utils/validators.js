@@ -111,9 +111,12 @@ export function ValidateEmail(value, errors = {}) {
   errors["error"] = "Entrer un e-mail valide";
   return false;
 }
-export function validPassword(value, errors = {}) {
+export function validPassword(value, confPassword = undefined, errors = {}) {
   if (isStringEmpty(value) || value.length < 5) {
     errors["error"] = "Le mot de passe doit etre au moins de 5 caractères";
+  }
+  if (confPassword && value !== confPassword) {
+    errors["error"] = "Les deux mot de passe ne correspondent pas";
   }
   return errors;
 }

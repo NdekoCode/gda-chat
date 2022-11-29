@@ -15,13 +15,16 @@ export default class MessageCTRL {
    */
   async home(req, res) {
     const alert = new Alert(req, res);
+
     try {
       const messages = await MessageMDL.find({
-        $or: [{ senderId: req.auth.userId }, { receiver: req.auth.userId }],
+        $or: [{ senderId: req.authUser._id }, { receiver: req.authUser._id }],
       });
+
       if (messages !== null) {
         return res.send(messages);
       }
+
       return res.send([messages]);
     } catch (error) {
       return alert.danger("Erreurs lors de la récuperation des messages");
@@ -37,15 +40,17 @@ export default class MessageCTRL {
    */
   async addMessage(req, res) {
     const alert = new Alert(req, res);
-    const senderId = req.auth.userId;
+    const senderId = req.authUser._id;
     const receiverId = req.params.id;
     const talkersIds = [senderId, receiverId];
+
     const bodyRequest = {
       ...req.body,
       receiverId,
       senderId,
       talkersIds,
     };
+
     const errors = validForm(bodyRequest);
     console.log(bodyRequest, errors);
     if (isEmpty(errors)) {
@@ -73,7 +78,7 @@ export default class MessageCTRL {
   async getChatUser(req, res, next) {
     const alert = new Alert(req, res);
     const userId = req.params.id;
-    const userConnectedId = req.auth.userId;
+    const userConnectedId = req.authUser._id;
     try {
       console.log(userId);
       const chatsUsers = await MessageMDL.find({
