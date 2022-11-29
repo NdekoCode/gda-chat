@@ -9,7 +9,10 @@ export default class MessageCTRL {
       const messages = await MessageMDL.find({
         $or: [{ sender: req.auth.userId }, { receiver: req.auth.userId }],
       });
-      return res.send(messages);
+      if (messages !== null) {
+        return res.send(messages);
+      }
+      return res.send([messages]);
     } catch (error) {
       return alert.danger("Erreurs lors de la récuperation des messages");
     }

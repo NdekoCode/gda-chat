@@ -83,7 +83,7 @@ export function validForm(reqbody, error = {}) {
         isStringEmpty(reqbody[element]) ||
         (typeof reqbody[element] === "string" && reqbody[element].length < 2)
       ) {
-        error["error"] = "Remplissez tous les champs";
+        error["error"] = "Remplissez les champs avec des informations valides";
       }
     }
   } else {

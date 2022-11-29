@@ -14,6 +14,10 @@ const ChatSchema = new Schema({
     type: String,
     required: true,
   },
+  talkerts: {
+    type: [Schema.Types.ObjectId],
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),
