@@ -1,11 +1,11 @@
 import { model, Schema } from "mongoose";
 const ChatSchema = new Schema({
-  sender: {
+  senderId: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: "User",
   },
-  receiver: {
+  receiverId: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: "User",
@@ -14,9 +14,10 @@ const ChatSchema = new Schema({
     type: String,
     required: true,
   },
-  talkerts: {
+  talkersIds: {
     type: [Schema.Types.ObjectId],
     required: true,
+    ref: "User",
   },
   createdAt: {
     type: Date,

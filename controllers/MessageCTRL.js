@@ -21,8 +21,9 @@ export default class MessageCTRL {
     const alert = new Alert(req, res);
     const bodyRequest = {
       ...req.body,
-      receiver: req.params.id,
-      sender: req.auth.userId,
+      receiverId: req.params.id,
+      senderId: req.auth.userId,
+      talkersIds: [req.params.id, req.auth.userId],
     };
     const errors = validForm(bodyRequest);
     console.log(bodyRequest, errors);
