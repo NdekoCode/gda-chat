@@ -1,12 +1,12 @@
-import ChatMDL from "../models/ChatMDL.js";
+import MessageMDL from "../models/MessageMDL.js";
 import Alert from "../utils/Alert.js";
 import { isEmpty, validForm } from "../utils/validators.js";
 
-export default class ChatCTRL {
+export default class MessageCTRL {
   async home(req, res, next) {
     const alert = new Alert(req, res);
     try {
-      const messages = await ChatMDL.find({
+      const messages = await MessageMDL.find({
         $or: [{ sender: req.auth.userId }, { receiver: req.auth.userId }],
       });
       return res.send(messages);
@@ -25,7 +25,7 @@ export default class ChatCTRL {
     console.log(bodyRequest, errors);
     if (isEmpty(errors)) {
       try {
-        const chat = new ChatMDL(bodyRequest);
+        const chat = new MessageMDL(bodyRequest);
         await chat.save();
         return alert.success("Messages ajouter avec succès");
       } catch (error) {
@@ -43,7 +43,7 @@ export default class ChatCTRL {
     const userConnectedId = req.auth.userId;
     try {
       console.log(userId);
-      const chatsUsers = await ChatMDL.find({
+      const chatsUsers = await MessageMDL.find({
         $or: [
           {
             $and: [{ receiver: userId }, { sender: userConnectedId }],

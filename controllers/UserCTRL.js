@@ -1,7 +1,7 @@
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
 import IO from "../config/socket.io.js";
-import ChatMDL from "../models/ChatMDL.js";
+import MessageMDL from "../models/MessageMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import Alert from "../utils/Alert.js";
 import {
@@ -167,7 +167,7 @@ export default class UserCTRL {
     const alert = new Alert(req, res);
     try {
       console.log(req.auth.userId);
-      const messageUsers = await ChatMDL.find({
+      const messageUsers = await MessageMDL.find({
         $or: [{ receiver: req.auth.userId }, { sender: req.auth.userId }],
       });
       let contactIds = [

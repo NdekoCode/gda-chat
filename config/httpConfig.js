@@ -2,7 +2,7 @@ import { createWriteStream } from "fs";
 import { createServer } from "http";
 import morgan from "morgan";
 import { join } from "path";
-import ChatMDL from "../models/ChatMDL.js";
+import MessageMDL from "../models/MessageMDL.js";
 import { normalizePort, __dirname } from "../utils/utils.js";
 import IO from "./socket.io.js";
 const httpConfig = (app) => {
@@ -40,7 +40,7 @@ const httpConfig = (app) => {
           .emit("user_contact", users.userInterlocutor);
       }
       try {
-        const messages = await ChatMDL.find({
+        const messages = await MessageMDL.find({
           $or: [
             {
               $and: [
@@ -76,7 +76,7 @@ const httpConfig = (app) => {
     socket.on("send_message", async (data) => {
       console.log("Message reçus..." + JSON.stringify(data));
       try {
-        const chat = new ChatMDL(data.dataSend);
+        const chat = new MessageMDL(data.dataSend);
         await chat.save();
         console.log(data.dataSend.receiver);
         socket.in(data.dataSend.receiver).emit("received_message", data);

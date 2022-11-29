@@ -1,7 +1,7 @@
 import { hash } from "bcrypt";
 import { readFile } from "fs/promises";
 import { join } from "path";
-import ChatMDL from "../models/ChatMDL.js";
+import MessageMDL from "../models/MessageMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import { __dirname } from "./utils.js";
 
@@ -80,7 +80,7 @@ export async function userFakeMessage() {
         sender: users[parseInt(Math.random() * users.length)]._id,
         message: element.quote,
       };
-      const chat = new ChatMDL(msg);
+      const chat = new MessageMDL(msg);
       await chat.save();
       console.log("Message insert");
     }

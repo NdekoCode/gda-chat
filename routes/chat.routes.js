@@ -1,9 +1,9 @@
 import { Router } from "express";
-import ChatCTRL from "../controllers/ChatCTRL.js";
-const chatCTRL = new ChatCTRL();
-const chatRoutes = Router();
+import MessageCTRL from "../controllers/MessageCTRL.js";
+const messageCTRL = new MessageCTRL();
+const messageRoutes = Router();
 
-chatRoutes.get("/", chatCTRL.home);
-chatRoutes.post("/send/:id", chatCTRL.addMessage);
-chatRoutes.get("/user/:id", chatCTRL.getChatUser);
-export default chatRoutes;
+messageRoutes.get("/", messageCTRL.home);
+messageRoutes.post("/send/:id", messageCTRL.addMessage);
+messageRoutes.get("/user/:id", messageCTRL.getChatUser);
+export default messageRoutes;

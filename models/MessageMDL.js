@@ -20,5 +20,5 @@ const ChatSchema = new Schema({
     required: true,
   },
 });
-const ChatMDL = new model("Chat", ChatSchema);
-export default ChatMDL;
+const MessageMDL = new model("Chat", ChatSchema);
+export default MessageMDL;
