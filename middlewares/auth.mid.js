@@ -10,7 +10,8 @@ export default async function auth(req, res, next) {
     const token = req.headers.authorization.split(" ")[1];
     const decodedToken = jwt.verify(token, process.env.SECRET_WORD);
     const userId = decodedToken.userId;
-    req.authUser = await UserMDL.findById(userId);
+    const user = await UserMDL.findById(userId);
+    req.authUser = new UserMDL(user);
     next();
   } catch (error) {
     if (process.env.ENVIRONNEMENT === "DEVELOPMENT") {

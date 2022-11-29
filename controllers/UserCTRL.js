@@ -174,10 +174,17 @@ export default class UserCTRL {
       );
     }
   }
-  async getContacts(req, res, next) {
+  /**
+   * @description Récupere tous les utilisateurs qui ont déjà communiquer et les renvois à l'utilisateur
+   * @author NdekoCode
+   * @param {IncomingMessage} req
+   * @param {ServerResponse} res
+   * @return {array<object>} La liste des utilisateurs considerer comme contact
+   * @memberof UserCTRL
+   */
+  async getContacts(req, res) {
     const alert = new Alert(req, res);
     try {
-      console.log(req.authUser._id);
       const messageUsers = await MessageMDL.find({
         $or: [{ receiver: req.authUser._id }, { sender: req.authUser._id }],
       });
@@ -214,13 +221,28 @@ export default class UserCTRL {
       );
     }
   }
-  async updateUser(req, res, next) {
-    const id = req.params.id;
-    const bodyRequest = { ...req.body };
-    delete bodyRequest._id;
-    delete bodyRequest.userId;
-    try {
-      const user = await UserMDL.findByIdAndUpdate(id, {});
-    } catch (error) {}
+  async updateUser(req, res) {
+    const alert = new Alert(req, res);
+    if (!isEmpty(req.body)) {
+      const bodyRequest = { ...req.body };
+      delete bodyRequest._id;
+      delete bodyRequest.userId;
+      const errors = validForm(bodyRequest);
+
+      try {
+        if (isEmptyObject(errors)) {
+          const id = req.params.id;
+          await UserMDL.findOneAndUpdate({ _id: id }, bodyRequest);
+
+          return alert.success(
+            "Utilisateur modifier entrer des informations valides"
+          );
+        }
+        return alert.danger(errors["error"]);
+      } catch (error) {
+        return alert.danger("Error lors de la modification de l'utilisateur");
+      }
+    }
+    return alert.danger("Veuillez entrer des informations valides");
   }
 }

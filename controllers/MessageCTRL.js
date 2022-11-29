@@ -77,17 +77,16 @@ export default class MessageCTRL {
   }
   async getChatUser(req, res, next) {
     const alert = new Alert(req, res);
-    const userId = req.params.id;
-    const userConnectedId = req.authUser._id;
     try {
-      console.log(userId);
+      const senderId = req.authUser._id;
+      const receiverId = req.params.id;
       const chatsUsers = await MessageMDL.find({
         $or: [
           {
-            $and: [{ receiver: userId }, { sender: userConnectedId }],
+            $and: [{ receiverId: receiverId }, { senderId: senderId }],
           },
           {
-            $and: [{ sender: userId }, { receiver: userConnectedId }],
+            $and: [{ sender: receiverId }, { receiver: senderId }],
           },
         ],
       });
