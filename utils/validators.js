@@ -83,9 +83,11 @@ export function validForm(reqbody, error = {}) {
         isStringEmpty(reqbody[element]) ||
         (typeof reqbody[element] === "string" && reqbody[element].length < 2)
       ) {
-        error[element] = "Ce champ est requis";
+        error["error"] = "Remplissez tous les champs";
       }
     }
+  } else {
+    error["error"] = "Veuillez completer tous les champs";
   }
   return error;
 }
@@ -104,14 +106,14 @@ export function ValidateEmail(value, errors = {}) {
     if (value.match(validRegex)) {
       return true;
     }
-    errors["email"] = "adresse e-mail invalide";
+    errors["error"] = "adresse e-mail invalide";
   }
-  errors["email"] = "Entrer un e-mail valide";
+  errors["error"] = "Entrer un e-mail valide";
   return false;
 }
 export function validPassword(value, errors = {}) {
   if (isStringEmpty(value) || value.length < 5) {
-    errors["password"] = "Le mot de passe doit etre au moins de 5 caractères";
+    errors["error"] = "Le mot de passe doit etre au moins de 5 caractères";
   }
   return errors;
 }

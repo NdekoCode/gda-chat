@@ -2,10 +2,9 @@ import { createWriteStream } from "fs";
 import { createServer } from "http";
 import morgan from "morgan";
 import { join } from "path";
-import { Server } from "socket.io";
 import ChatMDL from "../models/ChatMDL.js";
 import { normalizePort, __dirname } from "../utils/utils.js";
-import { isEmpty, validForm } from "../utils/validators.js";
+import IO from "./socket.io.js";
 const httpConfig = (app) => {
   const PORT = normalizePort(process.env.PORT || 3500);
   app.use(
@@ -19,18 +18,11 @@ const httpConfig = (app) => {
     })
   );
   app.set("port", PORT);
+  /** @type {Server<Request, Response>} */
   const server = createServer(app);
 
   // IO
-  const io = new Server(server, {
-    cors: {
-      origin: [
-        "http://localhost:5173",
-        "https://gda-chat.netlify.app",
-        "http://localhost:5174",
-      ],
-    },
-  });
+  const io = IO.init(server);
   // FIXED : Se connecter au socket, on detecte quand un utilisateur se connecter
   io.on("connection", (socket) => {
     console.log("Socket connection is initialized in backend");
@@ -41,6 +33,12 @@ const httpConfig = (app) => {
     socket.on("join_user", async (users) => {
       socket.userConnectId = users.userConnectId;
       socket.join(users.userConnectId);
+      if (users.userInterlocutor) {
+        console.log("new user", users.userInterlocutor);
+        socket
+          .in(users.userInterlocutor._id)
+          .emit("user_contact", users.userInterlocutor);
+      }
       try {
         const messages = await ChatMDL.find({
           $or: [
@@ -66,30 +64,26 @@ const httpConfig = (app) => {
       }
     });
     socket.on("user_connected", (user) => {
-      console.log("new user connected " + user.firstName);
-      socket.join(user.userId);
-    });
-    socket.on("user_writing", (user) => {
-      console.log(user.firstName + " EST ENTRER D'ECRIRE ", user.userId);
-    });
-    socket.on("user_connected", (user) => {
       console.log(user.firstName + " est connected ", user.userId);
+      socket.broadcast.emit("new_user", user);
+    });
+    socket.on("user_writing", (data) => {
+      socket.to(data.toSend._id).emit("typing", {
+        isWriting: data.isWriting,
+        writeTo: data.toSend,
+      });
     });
     socket.on("send_message", async (data) => {
       console.log("Message reçus..." + JSON.stringify(data));
-      const errors = validForm(data);
-      console.log(data, errors);
-      if (isEmpty(errors)) {
-        try {
-          const chat = new ChatMDL(data);
-          await chat.save();
-          console.log(data.receiver);
-          socket.in(data.receiver).emit("received_message", data);
-        } catch (error) {
-          return console.log(
-            "Erreur survenus lors de l'envois du message " + error.message
-          );
-        }
+      try {
+        const chat = new ChatMDL(data.dataSend);
+        await chat.save();
+        console.log(data.dataSend.receiver);
+        socket.in(data.dataSend.receiver).emit("received_message", data);
+      } catch (error) {
+        console.log(
+          "Erreur survenus lors de l'envois du message " + error.message
+        );
       }
     });
     // Detecter quand un utilisateur se connecte ou se deconnecte
