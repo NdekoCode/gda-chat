@@ -2,8 +2,8 @@ import { createWriteStream } from "fs";
 import { createServer } from "http";
 import morgan from "morgan";
 import { join } from "path";
-import MessageMDL from "../models/MessageMDL.js";
 import { normalizePort, __dirname } from "../utils/utils.js";
+import { isVarEmpty } from "../utils/validators.js";
 import IO from "./socket.io.js";
 const httpConfig = (app) => {
   const PORT = normalizePort(process.env.PORT || 3500);
@@ -32,14 +32,14 @@ const httpConfig = (app) => {
     // Un utilisateur vient de rejoindre le salon
     socket.on("join_user", async (users) => {
       socket.userConnectId = users.userConnectId;
-      socket.join(users.userConnectId);
-      if (users.userInterlocutor) {
+      socket.join(socket.userConnectId);
+      if (!isVarEmpty(users.userInterlocutor)) {
         console.log("new user", users.userInterlocutor);
         socket
           .in(users.userInterlocutor._id)
           .emit("user_contact", users.userInterlocutor);
       }
-      try {
+      /* try {
         const messages = await MessageMDL.find({
           $or: [
             {
@@ -61,8 +61,9 @@ const httpConfig = (app) => {
         console.log(
           "error lors de la récupération des messages " + error.message
         );
-      }
+      } */
     });
+    /*   
     socket.on("user_connected", (user) => {
       console.log(user.firstName + " est connected ", user.userId);
       socket.broadcast.emit("new_user", user);
@@ -85,7 +86,7 @@ const httpConfig = (app) => {
           "Erreur survenus lors de l'envois du message " + error.message
         );
       }
-    });
+    }); */
     // Detecter quand un utilisateur se connecte ou se deconnecte
   });
   const handleError = (err) => {

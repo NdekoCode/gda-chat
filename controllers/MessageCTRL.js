@@ -1,8 +1,16 @@
+import IO from "../config/socket.io.js";
 import MessageMDL from "../models/MessageMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import Alert from "../utils/Alert.js";
 import { isEmpty, validForm } from "../utils/validators.js";
 
+/**
+ * @description Le controlleur pour les messages
+ * - Il ne faut pas oublier que la personne qui envoie le message c'est la personne qui est actuellement connecter donc le (senderId)
+ * @author NdekoCode
+ * @export
+ * @class MessageCTRL
+ */
 export default class MessageCTRL {
   /**
    *
@@ -59,6 +67,10 @@ export default class MessageCTRL {
         if (userExist !== null) {
           const chat = new MessageMDL(bodyRequest);
           await chat.save();
+          const socket = IO.getIO();
+          socket.on("send_message", (data) => {
+            socket.in(data.dataSend.receiverId).emit("received_message", data);
+          });
           return alert.success("Messages ajouter avec succès");
         }
 
@@ -75,6 +87,26 @@ export default class MessageCTRL {
 
     return alert.danger(errors["error"]);
   }
+  /**
+   * @description Permet de recuperer les messages entrer deux personnes uniquement qui ont déjà converser
+   * @author NdekoCode
+   * @param {IncomingMessage} req
+   * @param {ServerResponse} res
+   * @memberof MessageCTRL
+   */
+  async loadSpecificMessages(req, res) {
+    const receiverId = req.params.id;
+    const senderId = req.authUser._id;
+    const messages = await MessageMDL.find({
+      stalkers: {
+        $all: [senderId, receiverId],
+      },
+    });
+    if (messages) {
+      return res.send(messages);
+    }
+    return res.send([]);
+  }
   async getChatUser(req, res, next) {
     const alert = new Alert(req, res);
     try {
@@ -83,18 +115,36 @@ export default class MessageCTRL {
       const chatsUsers = await MessageMDL.find({
         $or: [
           {
-            $and: [{ receiverId: receiverId }, { senderId: senderId }],
+            talkersIds: [receiverId, senderId],
           },
           {
-            $and: [{ sender: receiverId }, { receiver: senderId }],
+            talkersIds: [senderId, receiverId],
           },
         ],
       });
 
-      console.log(chatsUsers);
       return res.send(chatsUsers);
     } catch (error) {
       return alert.danger(error.message);
     }
+  }
+  /**
+   * @description Recupère les messages entre l'utilisateur connecter et l'utilisateur qu'il a choisis pour discuter
+   * @author NdekoCode
+   * @param {IncommingMessage} req
+   * @param {ServerResponse} res
+   * @memberof MessageCTRL
+   */
+  async getMessagesWithAuthUser(req, res) {
+    const receiverId = req.params.id;
+    const senderId = req.authUser._id;
+    const talkersIds = [senderId, receiverId];
+    try {
+      const messages = await MessageMDL.find({
+        talkersIds: {
+          $all: talkersIds,
+        },
+      });
+    } catch (error) {}
   }
 }

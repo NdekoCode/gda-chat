@@ -138,7 +138,8 @@ export default class UserCTRL {
           };
           const socket = IO.getIO();
 
-          socket.emit("user_connected", userConnected);
+          socket.emit("user_login", userConnected);
+          console.log(socket, userConnected);
           return alert.makeAlert("Vous etes connecter", 200, "success", {
             userData: {
               ...userConnected,
@@ -186,29 +187,38 @@ export default class UserCTRL {
     const alert = new Alert(req, res);
     try {
       const messageUsers = await MessageMDL.find({
-        $or: [{ receiver: req.authUser._id }, { sender: req.authUser._id }],
-      });
-      let contactIds = [
-        ...new Set(
-          messageUsers.map(({ sender, receiver }) => {
-            if (sender.toString() !== req.authUser._id.toString()) {
-              return sender.toString();
-            } else if (receiver.toString() !== req.authUser._id.toString()) {
-              return receiver.toString();
-            }
-          })
-        ),
-      ];
-      if (!isVarEmpty(contactIds)) {
-        const users = await UserMDL.find({ _id: { $in: contactIds } }, [
-          "_id",
-          "firstName",
-          "lastName",
-          "username",
-          "image",
-          "email",
+        $or: [{ receiverId: req.authUser._id }, { senderId: req.authUser._id }],
+      })
+        .sort({ createdAt: -1 })
+        .exec();
+      if (!isVarEmpty(messageUsers)) {
+        let contactIds = [
+          ...new Set(
+            messageUsers.map(({ senderId, receiverId }) => {
+              if (senderId.toString() !== req.authUser._id.toString()) {
+                return senderId.toString();
+              } else if (
+                receiverId.toString() !== req.authUser._id.toString()
+              ) {
+                return receiverId.toString();
+              }
+            })
+          ),
+        ];
+        if (!isVarEmpty(contactIds)) {
+          const users = await UserMDL.find({ _id: { $in: contactIds } }, [
+            "_id",
+            "firstName",
+            "lastName",
+            "username",
+            "image",
+            "email",
+          ]);
+          return res.status(200).send(users);
+        }
+        return alert.infos([
+          "Vous n'avez pas de contact disponible, veuillez en ajouter",
         ]);
-        return res.status(200).send(users);
       }
       return alert.infos(
         "Vous n'avez pas de contact disponible, veuillez en ajouter"
