@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(resolve(__dirname, "public"))); // On configure le dossier qui va contenir nos fichiers static càd CSS/JS/IMAGES
 app.use("/api/v1/auth", userRoutes);
-app.use("/api/v1/chat", auth, messageRoutes);
+app.use("/api/v1/messages", auth, messageRoutes);
 
 app.use((req, res, next) => {
   res.status(404).send({ message: "URL not Found" });

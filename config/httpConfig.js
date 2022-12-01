@@ -2,8 +2,8 @@ import { createWriteStream } from "fs";
 import { createServer } from "http";
 import morgan from "morgan";
 import { join } from "path";
-import MessageMDL from "../models/MessageMDL.js";
 import { normalizePort, __dirname } from "../utils/utils.js";
+import { isVarEmpty } from "../utils/validators.js";
 import IO from "./socket.io.js";
 const httpConfig = (app) => {
   const PORT = normalizePort(process.env.PORT || 3500);
@@ -30,61 +30,37 @@ const httpConfig = (app) => {
       console.log(" User disconnected");
     });
     // Un utilisateur vient de rejoindre le salon
-    socket.on("join_user", async (users) => {
+    socket.on("join_conversation", (users) => {
+      // Si je suis connecter au tout debut je vais rejoindre mon propre salon mais quand je vais cliquer sur un utilisateur je vais plutot rejoindre sa salle à lui
+      socket.join(users.userInterlocutorId);
+      console.log("New user", users.userInterlocutor);
       socket.userConnectId = users.userConnectId;
-      socket.join(users.userConnectId);
-      if (users.userInterlocutor) {
+      socket.emit("new_user", socket.userConnectId);
+      if (!isVarEmpty(users.userInterlocutorId)) {
         console.log("new user", users.userInterlocutor);
-        socket
-          .in(users.userInterlocutor._id)
-          .emit("user_contact", users.userInterlocutor);
-      }
-      try {
-        const messages = await MessageMDL.find({
-          $or: [
-            {
-              $and: [
-                { sender: { $eq: users.userInterlocutorId } },
-                { receiver: { $eq: users.userConnectId } },
-              ],
-            },
-            {
-              $and: [
-                { receiver: { $eq: users.userInterlocutorId } },
-                { sender: { $eq: users.userConnectId } },
-              ],
-            },
-          ],
-        });
-        socket.emit("load_messages", JSON.stringify(messages));
-      } catch (error) {
-        console.log(
-          "error lors de la récupération des messages " + error.message
+        io.in(users.userInterlocutorId).emit(
+          "user_contact",
+          users.userInterlocutor
         );
       }
     });
-    socket.on("user_connected", (user) => {
-      console.log(user.firstName + " est connected ", user.userId);
-      socket.broadcast.emit("new_user", user);
-    });
+
     socket.on("user_writing", (data) => {
-      socket.to(data.toSend._id).emit("typing", {
-        isWriting: data.isWriting,
-        writeTo: data.toSend,
+      socket.to(data.receiverUser._id).emit("typing", {
+        senderUser: data.senderUser,
+        receiverUser: data.receiverUser,
       });
     });
-    socket.on("send_message", async (data) => {
-      console.log("Message reçus..." + JSON.stringify(data));
-      try {
-        const chat = new MessageMDL(data.dataSend);
-        await chat.save();
-        console.log(data.dataSend.receiver);
-        socket.in(data.dataSend.receiver).emit("received_message", data);
-      } catch (error) {
-        console.log(
-          "Erreur survenus lors de l'envois du message " + error.message
-        );
-      }
+
+    // On détecte quand un message à été envoyer
+    socket.on("send_message", (data) => {
+      console.log("Message send", data);
+      // On envois un evenement à la personne à qui on a envoyer le message
+      socket.in(data.dataSend.receiverId).emit("received_message", data);
+    });
+    socket.on("logout_user", (user) => {
+      socket.leave(user.userId);
+      console.log(user.firstName + " est déconnecter ");
     });
     // Detecter quand un utilisateur se connecte ou se deconnecte
   });
