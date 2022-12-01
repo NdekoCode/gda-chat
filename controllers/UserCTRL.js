@@ -139,7 +139,7 @@ export default class UserCTRL {
           const socket = IO.getIO();
 
           socket.emit("user_login", userConnected);
-          console.log(socket, userConnected);
+          console.log("Vient de rejoindre", userConnected);
           return alert.makeAlert("Vous etes connecter", 200, "success", {
             userData: {
               ...userConnected,
@@ -165,7 +165,9 @@ export default class UserCTRL {
   async getUsers(req, res, next) {
     const alert = new Alert(req, res);
     try {
-      const users = await UserMDL.find({ _id: { $ne: req.authUser._id } });
+      const users = await UserMDL.find({ _id: { $ne: req.authUser._id } })
+        .sort({ createdAt: -1 })
+        .exec();
       return res.status(200).send(users);
     } catch (error) {
       return alert.danger(
@@ -213,7 +215,9 @@ export default class UserCTRL {
             "username",
             "image",
             "email",
-          ]);
+          ])
+            .sort({ createdAt: -1 })
+            .exec();
           return res.status(200).send(users);
         }
         return alert.infos([

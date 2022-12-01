@@ -1,8 +1,8 @@
-import IO from "../config/socket.io.js";
+import { Types } from "mongoose";
 import MessageMDL from "../models/MessageMDL.js";
 import UserMDL from "../models/UserMDL.js";
 import Alert from "../utils/Alert.js";
-import { isEmpty, validForm } from "../utils/validators.js";
+import { isEmpty, isVarEmpty, validForm } from "../utils/validators.js";
 
 /**
  * @description Le controlleur pour les messages
@@ -26,7 +26,10 @@ export default class MessageCTRL {
 
     try {
       const messages = await MessageMDL.find({
-        $or: [{ senderId: req.authUser._id }, { receiver: req.authUser._id }],
+        $or: [
+          { senderId: Types.ObjectId(req.authUser._id) },
+          { receiver: req.authUser._id },
+        ],
       });
 
       if (messages !== null) {
@@ -60,17 +63,12 @@ export default class MessageCTRL {
     };
 
     const errors = validForm(bodyRequest);
-    console.log(bodyRequest, errors);
     if (isEmpty(errors)) {
       try {
         const userExist = await UserMDL.findById(receiverId);
-        if (userExist !== null) {
+        if (!isVarEmpty(userExist)) {
           const chat = new MessageMDL(bodyRequest);
           await chat.save();
-          const socket = IO.getIO();
-          socket.on("send_message", (data) => {
-            socket.in(data.dataSend.receiverId).emit("received_message", data);
-          });
           return alert.success("Messages ajouter avec succès");
         }
 
@@ -99,7 +97,7 @@ export default class MessageCTRL {
     const senderId = req.authUser._id;
     const messages = await MessageMDL.find({
       stalkers: {
-        $all: [senderId, receiverId],
+        $all: [new Types.ObjectId(senderId), new Types.ObjectId(receiverId)],
       },
     });
     if (messages) {
@@ -115,10 +113,16 @@ export default class MessageCTRL {
       const chatsUsers = await MessageMDL.find({
         $or: [
           {
-            talkersIds: [receiverId, senderId],
+            talkersIds: [
+              new Types.ObjectId(receiverId),
+              new Types.ObjectId(senderId),
+            ],
           },
           {
-            talkersIds: [senderId, receiverId],
+            talkersIds: [
+              new Types.ObjectId(senderId),
+              new Types.ObjectId(receiverId),
+            ],
           },
         ],
       });
@@ -136,15 +140,22 @@ export default class MessageCTRL {
    * @memberof MessageCTRL
    */
   async getMessagesWithAuthUser(req, res) {
+    const alert = new Alert(req, res);
     const receiverId = req.params.id;
     const senderId = req.authUser._id;
-    const talkersIds = [senderId, receiverId];
+    const talkersIds = [
+      new Types.ObjectId(senderId),
+      new Types.ObjectId(receiverId),
+    ];
     try {
       const messages = await MessageMDL.find({
         talkersIds: {
           $all: talkersIds,
         },
       });
-    } catch (error) {}
+      return res.send(messages);
+    } catch (error) {
+      return alert.danger(error.message, 500);
+    }
   }
 }
