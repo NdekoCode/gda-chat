@@ -1,8 +1,8 @@
 import { hash } from "bcrypt";
 import { readFile } from "fs/promises";
 import { join } from "path";
-import MessageMDL from "../models/MessageMDL.js";
-import UserMDL from "../models/UserMDL.js";
+import MessageMDL from "../../models/MessageMDL.js";
+import UserMDL from "../../models/UserMDL.js";
 import { __dirname } from "./utils.js";
 
 export async function userFakeData() {

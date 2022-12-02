@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import IO from "../config/socket.io.js";
 import MessageMDL from "../models/MessageMDL.js";
 import UserMDL from "../models/UserMDL.js";
-import Alert from "../utils/Alert.js";
+import Alert from "../routes/utils/Alert.js";
 import {
   isEmpty,
   isEmptyObject,
@@ -12,7 +12,7 @@ import {
   ValidateEmail,
   validForm,
   validPassword,
-} from "../utils/validators.js";
+} from "../routes/utils/validators.js";
 /**
  * @description Va contenir les differentes fonctions qui vont interagir avec l'application concernant le traitement des Utilisateur et la route "/api/v1/auth"
  * @author NdekoCode
@@ -137,7 +137,6 @@ export default class UserCTRL {
             image: user?.image,
           };
           const socket = IO.getIO();
-
           socket.emit("user_login", userConnected);
           console.log("Vient de rejoindre", userConnected);
           return alert.makeAlert("Vous etes connecter", 200, "success", {

@@ -2,8 +2,7 @@ import { createWriteStream } from "fs";
 import { createServer } from "http";
 import morgan from "morgan";
 import { join } from "path";
-import { normalizePort, __dirname } from "../utils/utils.js";
-import { isVarEmpty } from "../utils/validators.js";
+import { normalizePort, __dirname } from "../routes/utils/utils.js";
 import IO from "./socket.io.js";
 const httpConfig = (app) => {
   const PORT = normalizePort(process.env.PORT || 3500);
@@ -33,16 +32,9 @@ const httpConfig = (app) => {
     socket.on("join_conversation", (users) => {
       // Si je suis connecter au tout debut je vais rejoindre mon propre salon mais quand je vais cliquer sur un utilisateur je vais plutot rejoindre sa salle à lui
       socket.join(users.userInterlocutorId);
-      console.log("New user", users.userInterlocutor);
-      socket.userConnectId = users.userConnectId;
-      socket.emit("new_user", socket.userConnectId);
-      if (!isVarEmpty(users.userInterlocutorId)) {
-        console.log("new user", users.userInterlocutor);
-        io.in(users.userInterlocutorId).emit(
-          "user_contact",
-          users.userInterlocutor
-        );
-      }
+    });
+    socket.on("user_online", (user) => {
+      socket.in(user.userId).emit("contact_online", user);
     });
 
     socket.on("user_writing", (data) => {
@@ -54,7 +46,6 @@ const httpConfig = (app) => {
 
     // On détecte quand un message à été envoyer
     socket.on("send_message", (data) => {
-      console.log("Message send", data);
       // On envois un evenement à la personne à qui on a envoyer le message
       socket.in(data.dataSend.receiverId).emit("received_message", data);
     });

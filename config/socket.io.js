@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import { isVarEmpty } from "../routes/utils/validators.js";
 let io;
 const IO = {
   /**
@@ -8,15 +9,17 @@ const IO = {
    * @return {Server}
    */
   init: (server) => {
-    io = new Server(server, {
-      cors: {
-        origin: [
-          "http://localhost:5173",
-          "https://gda-chat.netlify.app",
-          "http://localhost:5174",
-        ],
-      },
-    });
+    if (isVarEmpty(io)) {
+      io = new Server(server, {
+        cors: {
+          origin: [
+            "http://localhost:5173",
+            "https://gda-chat.netlify.app",
+            "http://localhost:5174",
+          ],
+        },
+      });
+    }
     return io;
   },
   /**
