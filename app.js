@@ -4,7 +4,7 @@ import { resolve } from "path";
 import auth from "./middlewares/auth.mid.js";
 import messageRoutes from "./routes/chat.routes.js";
 import userRoutes from "./routes/user.routes.js";
-import { __dirname } from "./routes/utils/utils.js";
+import { __dirname } from "./utils/utils.js";
 const app = express();
 app.use(
   cors({

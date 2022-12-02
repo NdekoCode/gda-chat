@@ -2,7 +2,7 @@ import { createWriteStream } from "fs";
 import { createServer } from "http";
 import morgan from "morgan";
 import { join } from "path";
-import { normalizePort, __dirname } from "../routes/utils/utils.js";
+import { normalizePort, __dirname } from "../utils/utils.js";
 import IO from "./socket.io.js";
 const httpConfig = (app) => {
   const PORT = normalizePort(process.env.PORT || 3500);

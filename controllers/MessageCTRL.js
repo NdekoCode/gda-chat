@@ -1,8 +1,8 @@
 import { Types } from "mongoose";
 import MessageMDL from "../models/MessageMDL.js";
 import UserMDL from "../models/UserMDL.js";
-import Alert from "../routes/utils/Alert.js";
-import { isEmpty, isVarEmpty, validForm } from "../routes/utils/validators.js";
+import Alert from "../utils/Alert.js";
+import { isEmpty, isVarEmpty, validForm } from "../utils/validators.js";
 
 /**
  * @description Le controlleur pour les messages
