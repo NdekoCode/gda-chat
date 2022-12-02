@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { isVarEmpty } from "../routes/utils/validators.js";
+import { isVarEmpty } from "../utils/validators.js";
 let io;
 const IO = {
   /**

@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import UserMDL from "../models/UserMDL.js";
-import Alert from "../routes/utils/Alert.js";
+import Alert from "../utils/Alert.js";
 dotenv.config();
 
 export default async function auth(req, res, next) {
