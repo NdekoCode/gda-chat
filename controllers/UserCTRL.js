@@ -164,7 +164,14 @@ export default class UserCTRL {
   async getUsers(req, res, next) {
     const alert = new Alert(req, res);
     try {
-      const users = await UserMDL.find({ _id: { $ne: req.authUser._id } })
+      const users = await UserMDL.find({ _id: { $ne: req.authUser._id } }, [
+        "_id",
+        "firstName",
+        "lastName",
+        "username",
+        "image",
+        "email",
+      ])
         .sort({ createdAt: -1 })
         .exec();
       return res.status(200).send(users);
