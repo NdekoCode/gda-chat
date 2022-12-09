@@ -10,7 +10,7 @@ export const __dirname = dirname(dirname(__filename));
 export function normalizePort(value) {
   const port = parseInt(value, 10);
   if (isNaN(port)) {
-    return value;
+    return 3500;
   }
   if (port >= 0) {
     return port;
