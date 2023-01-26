@@ -4,7 +4,7 @@ import { resolve } from "path";
 import auth from "./middlewares/auth.mid.js";
 import messageRoutes from "./routes/chat.routes.js";
 import userRoutes from "./routes/user.routes.js";
-import { __dirname } from "./utils/utils.js";
+import { BASE_URL, __dirname } from "./utils/utils.js";
 const app = express();
 app.use(
   cors({
@@ -18,8 +18,8 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(resolve(__dirname, "public"))); // On configure le dossier qui va contenir nos fichiers static càd CSS/JS/IMAGES
-app.use("/api/v1/auth", userRoutes);
-app.use("/api/v1/messages", auth, messageRoutes);
+app.use(BASE_URL + "/auth", userRoutes);
+app.use(BASE_URL + "/messages", auth, messageRoutes);
 
 app.use((req, res, next) => {
   res.status(404).send({ message: "URL not Found" });

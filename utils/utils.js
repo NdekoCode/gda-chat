@@ -17,3 +17,4 @@ export function normalizePort(value) {
   }
   return false;
 }
+export const BASE_URL = "api/v1";
