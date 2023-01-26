@@ -1,7 +1,9 @@
+process.env.NODE_ENV = "test";
+import chai from "chai";
+import chaiHttp from "chai-http";
 import server from "../app.js";
 import MessageMDL from "../models/MessageMDL.js";
 import UserMDL from "../models/UserMDL.js";
-
 chai.use(chaiHttp);
 //clean up the database before and after each test
 beforeEach((done) => {

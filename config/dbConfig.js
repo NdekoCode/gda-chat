@@ -1,7 +1,12 @@
 import dotenv from "dotenv";
 import { connect } from "mongoose";
 dotenv.config();
-const dbURL = process.env.DB_URL;
+let dbURL;
+if (process.env.NODE_ENV !== "test") {
+  dbURL = process.env.DB_URL;
+} else {
+  dbURL = process.env.DB_URL_TEST;
+}
 const connectionParams = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
